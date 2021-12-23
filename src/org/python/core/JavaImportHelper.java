@@ -1,6 +1,7 @@
 package org.python.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -155,19 +156,28 @@ public class JavaImportHelper {
      * <p>
      * All parent packages appear as single entries like python modules, e.g. <code>java</code>,
      * <code>java.lang</code>, <code>java.lang.reflect</code>,
+     * <p>
+     * Packages may be omitted using the property 
+     * <code>org.python.core.JavaImportHelper.omitPackages</code>, whose
+     * default value is <code>io,video</code>
      */
     private static Map<String, String> buildLoadedPackages() {
+        List<String> omitPackages = Arrays.asList(System.getProperty("org.python.core.JavaImportHelper.omitPackages", "io,video").split(","));
         TreeMap<String, String> packageMap = new TreeMap<String, String>();
         Package[] packages = Package.getPackages();
         for (int i = 0; i < packages.length; i++) {
             String packageName = packages[i].getName();
-            packageMap.put(packageName, "");
+            if(!omitPackages.contains(packageName)) {
+                packageMap.put(packageName, "");
+            }
             int dotPos = 0;
             do {
                 dotPos = packageName.lastIndexOf(DOT);
                 if (dotPos > 0) {
                     packageName = packageName.substring(0, dotPos);
-                    packageMap.put(packageName, "");
+                    if(!omitPackages.contains(packageName)) {
+                        packageMap.put(packageName, "");
+                    }
                 }
             } while (dotPos > 0);
         }
